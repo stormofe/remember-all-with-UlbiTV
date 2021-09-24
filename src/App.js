@@ -12,32 +12,34 @@ function App() {
 		{ id: 3, title: "JS3", body: "Description" },
 	]);
 
-	const [title, setTitle] = useState("");
-	const [body, setBody] = useState("");
-	//const bodyInputRef = useRef();
+	const [post, setPost] = useState({
+		title: "",
+		body: "",
+	});
 
 	const addNewPost = (e) => {
 		e.preventDefault();
-		//console.log(title);
-		//console.log(bodyInputRef.current.value);
-
-		const newPost = {
-			id: Date.now(),
-			title,
-			body,
-		};
-		//console.log(newPost);
+		const newPost = { id: Date.now(), ...post };
 		setPosts([...posts, newPost]);
-		setTitle("");
-		setBody("");
+		setPost({ title: "", body: "" });
 	};
 
 	return (
 		<div className='App'>
 			<form>
 				{/*Управляемый компонент*/}
-				<MyInput value={title} onChange={(e) => setTitle(e.target.value)} type='text' placeholder='Name of project' />
-				<MyInput value={body} onChange={(e) => setBody(e.target.value)} type='text' placeholder='Description' />
+				<MyInput
+					value={post.title}
+					onChange={(e) => setPost({ ...post, title: e.target.value })}
+					type='text'
+					placeholder='Name of project'
+				/>
+				<MyInput
+					value={post.body}
+					onChange={(e) => setPost({ ...post, body: e.target.value })}
+					type='text'
+					placeholder='Description'
+				/>
 				{/*Неуправляемый компонент*/}
 				{/*<MyInput ref={bodyInputRef} type='text' placeholder='Description' />*/}
 				<MyButton onClick={addNewPost}>Add post</MyButton>
