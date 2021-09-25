@@ -1,50 +1,64 @@
 import React, { useRef, useState } from "react";
 import Counter from "./components/Counter";
+import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
 import MyButton from "./components/UI/button/MyButton";
 import MyInput from "./components/UI/input/MyInput";
+import MySelect from "./components/UI/select/MySelect";
 import "./styles/App.css";
 
 function App() {
 	const [posts, setPosts] = useState([
-		{ id: 1, title: "JS", body: "Description" },
-		{ id: 2, title: "JS2", body: "Description" },
-		{ id: 3, title: "JS3", body: "Description" },
+		{ id: 1, title: "Java", body: "WWWWWW" },
+		{ id: 2, title: "aa", body: "RRRR" },
+		{ id: 3, title: "Phyton", body: "NNNNNNN" },
 	]);
 
-	const [post, setPost] = useState({
-		title: "",
-		body: "",
-	});
+	const [selectedSort, setSelectedSort] = useState("");
+	const [searchQuery, setSearchQuery] = useState("");
 
-	const addNewPost = (e) => {
-		e.preventDefault();
-		const newPost = { id: Date.now(), ...post };
+	function getSortedPosts() {
+		if (selectedSort) {
+			return [...posts].sort((a, b) => a[selectedSort].localeCompare(b[selectedSort]));
+		}
+		return posts;
+	}
+
+	const sortedPosts = getSortedPosts();
+
+	const createPost = (newPost) => {
 		setPosts([...posts, newPost]);
-		setPost({ title: "", body: "" });
 	};
 
+	const removePost = (post) => {
+		setPosts(posts.filter((p) => p.id !== post.id));
+	};
+
+	const sortPosts = (sort) => {
+		setSelectedSort(sort);
+	};
 	return (
 		<div className='App'>
-			<form>
-				{/*Управляемый компонент*/}
-				<MyInput
-					value={post.title}
-					onChange={(e) => setPost({ ...post, title: e.target.value })}
-					type='text'
-					placeholder='Name of project'
+			<PostForm create={createPost} />
+			<hr style={{ margin: "15px 0px" }} />
+			<div>
+				<MyInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder='Search' />
+				<MySelect
+					value={selectedSort}
+					onChange={sortPosts}
+					defaultValue='Sort by:'
+					options={[
+						{ value: "title", name: "by name" },
+						{ value: "body", name: "by description" },
+					]}
 				/>
-				<MyInput
-					value={post.body}
-					onChange={(e) => setPost({ ...post, body: e.target.value })}
-					type='text'
-					placeholder='Description'
-				/>
-				{/*Неуправляемый компонент*/}
-				{/*<MyInput ref={bodyInputRef} type='text' placeholder='Description' />*/}
-				<MyButton onClick={addNewPost}>Add post</MyButton>
-			</form>
-			<PostList posts={posts} title={"List of posts"} />
+			</div>
+
+			{posts.length ? (
+				<PostList remove={removePost} posts={sortedPosts} title={"List of posts"} />
+			) : (
+				<h1 style={{ textAlign: "center" }}>Posts are not found!</h1>
+			)}
 			<Counter />
 			<Counter />
 			<Counter />
