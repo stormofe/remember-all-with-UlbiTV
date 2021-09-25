@@ -1,11 +1,13 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import Counter from "./components/Counter";
+import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
-import MyButton from "./components/UI/button/MyButton";
 import MyInput from "./components/UI/input/MyInput";
+import MyModal from "./components/UI/MyModal/MyModal";
 import MySelect from "./components/UI/select/MySelect";
 import "./styles/App.css";
+import MyButton from "./components/UI/button/MyButton";
 
 function App() {
 	const [posts, setPosts] = useState([
@@ -14,56 +16,41 @@ function App() {
 		{ id: 3, title: "Phyton", body: "NNNNNNN" },
 	]);
 
-	const [selectedSort, setSelectedSort] = useState("");
-	const [searchQuery, setSearchQuery] = useState("");
+	const [filter, setFilter] = useState({ sort: "", query: "" });
+	const [modal, setModal] = useState(false);
 
-	function getSortedPosts() {
-		if (selectedSort) {
-			return [...posts].sort((a, b) => a[selectedSort].localeCompare(b[selectedSort]));
+	const sortedPosts = useMemo(() => {
+		if (filter.sort) {
+			return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
 		}
 		return posts;
-	}
+	}, [filter.sort, posts]);
 
-	const sortedPosts = getSortedPosts();
+	const sortedAndSearchedPosts = useMemo(() => {
+		return sortedPosts.filter((post) => post.title.toLowerCase().includes(filter.query));
+	}, [filter.query, sortedPosts]);
 
 	const createPost = (newPost) => {
 		setPosts([...posts, newPost]);
+		setModal(false);
 	};
 
 	const removePost = (post) => {
 		setPosts(posts.filter((p) => p.id !== post.id));
 	};
 
-	const sortPosts = (sort) => {
-		setSelectedSort(sort);
-	};
 	return (
 		<div className='App'>
-			<PostForm create={createPost} />
-			<hr style={{ margin: "15px 0px" }} />
-			<div>
-				<MyInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder='Search' />
-				<MySelect
-					value={selectedSort}
-					onChange={sortPosts}
-					defaultValue='Sort by:'
-					options={[
-						{ value: "title", name: "by name" },
-						{ value: "body", name: "by description" },
-					]}
-				/>
-			</div>
+			<MyButton style={{ marginTop: 30 }} onClick={() => setModal(true)}>
+				Add post
+			</MyButton>
+			<MyModal visible={modal} setVisible={setModal}>
+				<PostForm create={createPost} />
+			</MyModal>
 
-			{posts.length ? (
-				<PostList remove={removePost} posts={sortedPosts} title={"List of posts"} />
-			) : (
-				<h1 style={{ textAlign: "center" }}>Posts are not found!</h1>
-			)}
-			<Counter />
-			<Counter />
-			<Counter />
-			<Counter />
-			<Counter />
+			<hr style={{ margin: "15px 0px" }} />
+			<PostFilter filter={filter} setFilter={setFilter} />
+			<PostList remove={removePost} posts={sortedAndSearchedPosts} title={"List of posts"} />
 		</div>
 	);
 }
