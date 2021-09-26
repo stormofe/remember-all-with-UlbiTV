@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Counter from "./components/Counter";
 import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
@@ -8,27 +8,26 @@ import MyModal from "./components/UI/MyModal/MyModal";
 import MySelect from "./components/UI/select/MySelect";
 import "./styles/App.css";
 import MyButton from "./components/UI/button/MyButton";
+import { usePosts } from "./hooks/usePosts";
+import axios from "axios";
+import PostService from "./API/PostService";
+import Loader from "./components/UI/loader/Loader";
+import { useFetching } from "./hooks/useFetching";
 
 function App() {
-	const [posts, setPosts] = useState([
-		{ id: 1, title: "Java", body: "WWWWWW" },
-		{ id: 2, title: "aa", body: "RRRR" },
-		{ id: 3, title: "Phyton", body: "NNNNNNN" },
-	]);
+	const [posts, setPosts] = useState([]);
 
 	const [filter, setFilter] = useState({ sort: "", query: "" });
 	const [modal, setModal] = useState(false);
+	const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
+	const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+		const posts = await PostService.getAll();
+		setPosts(posts);
+	});
 
-	const sortedPosts = useMemo(() => {
-		if (filter.sort) {
-			return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
-		}
-		return posts;
-	}, [filter.sort, posts]);
-
-	const sortedAndSearchedPosts = useMemo(() => {
-		return sortedPosts.filter((post) => post.title.toLowerCase().includes(filter.query));
-	}, [filter.query, sortedPosts]);
+	useEffect(() => {
+		fetchPosts();
+	}, []);
 
 	const createPost = (newPost) => {
 		setPosts([...posts, newPost]);
@@ -50,7 +49,14 @@ function App() {
 
 			<hr style={{ margin: "15px 0px" }} />
 			<PostFilter filter={filter} setFilter={setFilter} />
-			<PostList remove={removePost} posts={sortedAndSearchedPosts} title={"List of posts"} />
+			{postError && <h1>Error: ${postError}</h1>}
+			{isPostsLoading ? (
+				<div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
+					<Loader />
+				</div>
+			) : (
+				<PostList remove={removePost} posts={sortedAndSearchedPosts} title={"List of posts"} />
+			)}
 		</div>
 	);
 }
