@@ -23,16 +23,31 @@
 
 .post-enter {
 	transform: translateX(-350px);
- }
- .post-enter-active {
+}
+.post-enter-active {
 	transform: translateX(0px);
 
 	transition: all 500ms;
- }
- .post-exit {
+}
+.post-exit {
 	opacity: 1;
- }
- .post-exit-active {
+}
+.post-exit-active {
 	transform: translateX(-350px);
 	transition: all 500ms;
- }
+}
+
+.page {
+	padding: 5px;
+	border: 2px solid teal;
+	cursor: pointer;
+	margin: 0px 3px 0px 0px;
+}
+.page__wrapper {
+	margin: 30px 0px 0px 0px;
+	display: flex;
+}
+.page__current {
+	border: 3px solid orange;
+	font-weight: bold;
+}
